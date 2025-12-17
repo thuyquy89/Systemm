@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ thống quản lý nhân sự</title>
+    <style>
+        :root {
+            --gov-blue: #3399FF;
+            --gov-blue-dark: #3399FF;
+            --gov-cyann: #3399CC;
+            --gov-gold: #f9a825;
+            --bg-page: #f4f6f7;
+            --text-main: #212121;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Arial", sans-serif;
+            margin: 0;
+            background: var(--bg-page);
+            color: var(--text-main);
+            background-image: url(https://smartdecor.vn/wp-content/uploads/2024/07/mau-xanh-duong-pastel.jpg);
+        }
+        .side-img {
+            position: fixed;           /* đứng yên khi cuộn */
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 1;             
+            z-index: -1;               /* nằm sau khối trắng chính */
+            pointer-events: none;      /* không bị click vào ảnh */
+        }
+
+        .side-img-left {
+            left: 10px;                /* chỉnh khoảng cách so với mép trái */
+        }
+
+        .side-img-right {
+            right: 10px;               /* chỉnh khoảng cách so với mép phải */
+        }
+    
+        /* THANH ĐỎ ĐẦU TRANG */
+        .top-bar {
+            height: 6px;
+            background: var(--gov-cyann);
+        }
+
+        .page-wrapper {
+            max-width: 1100px;
+            margin: 24px auto 32px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.12);
+            overflow: hidden;   
+        }
+
+        /* HEADER CƠ QUAN */
+        .header-gov {
+            background: linear-gradient(90deg, var(--gov-blue-dark), var(--gov-blue));
+            color: #ffffff;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .gov-emblem {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid var(--gov-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 30% 30%, #ffffff, var(--gov-cyann));
+            font-weight: bold;
+            font-size: 26px;
+            color: #fff;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.2);
+        }
+
+        .gov-title-block {
+            line-height: 1.3;
+        }
+
+        .gov-title-top {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        .gov-title-main {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .gov-title-sub {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* THANH TÊN HỆ THỐNG */
+        .system-bar {
+            background: #eceff1;
+            padding: 8px 24px;
+            border-bottom: 1px solid #cfd8dc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .system-name {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gov-blue-dark);
+            font-weight: 600;
+        }
+
+        .system-user {
+            font-size: 12px;
+            color: #546e7a;
+        }
+
+        .system-user span {
+            font-weight: 600;
+            color: var(--gov-cyann);
+        }
+
+        .content {
+            padding: 18px 24px 28px;
+        }
+
+        .section-title {
+            margin-top: 16px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gov-blue-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: "";
+            width: 4px;
+            height: 16px;
+            border-radius: 2px;
+            background: var(--gov-cyann);
+        }
+
+        .section-note {
+            font-size: 12px;
+            color: #757575;
+            margin-bottom: 8px;
+        }
+
+        /* PANEL CHUNG */
+        .panel {
+            border: 1px solid #cfd8dc;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            background: #fafafa;
+        }
+
+        .panel-header {
+            background: #eceff1;
+            border-bottom: 1px solid #cfd8dc;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #37474f;
+        }
+
+        .panel-body {
+            padding: 12px 14px 10px;
+        }
+
+        /* FORM THÊM NHÂN SỰ */
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 24px;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 280px;
+            margin-bottom: 8px;
+        }
+
+        .form-row label {
+            width: 110px;
+            font-size: 13px;
+            color: #37474f;
+        }
+
+        .form-row input,
+        .form-row select {
+            flex: 1;
+            padding: 5px 8px;
+            font-size: 13px;
+            border: 1px solid #b0bec5;
+            border-radius: 3px;
+            background: #ffffff;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .form-row input:focus,
+        .form-row select:focus {
+            outline: none;
+            border-color: var(--gov-blue);
+            box-shadow: 0 0 0 1px rgba(0,105,92,0.25);
+        }
+
+        .form-actions {
+            margin-top: 8px;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border-radius: 3px;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            margin-right: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--gov-blue);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: var(--gov-blue-dark);
+        }
+
+        .btn-reset {
+            background: #eceff1;
+            color: #37474f;
+        }
+
+        .btn-reset:hover {
+            background: #cfd8dc;
+        }
+
+        .btn-icon {
+            font-size: 14px;
+        }
+
+        /* BẢNG DANH SÁCH NHÂN SỰ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: var(--gov-blue-dark);
+            color: #ffffff;
+        }
+
+        th, td {
+            padding: 7px 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:nth-child(odd) {
+            background: #ffffff;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+
+        tbody tr:hover {
+            background: #d1e1ff;
+        }
+
+        .tag-gender {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .tag-gender.male {
+            background: #1976d2;
+        }
+
+        .tag-gender.female {
+            background: #d81b60;
+        }
+
+        .tag-role {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            background: rgba(249, 168, 37, 0.14);
+            color: #bf7f00;
+            border: 1px solid rgba(249, 168, 37, 0.6);
+        }
+
+        /* THỐNG KÊ NHANH */
+        .stats-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .stat-card {
+            flex: 1 1 160px;
+            background: #ffffff;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            padding: 8px 10px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #616161;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gov-blue-dark);
+            margin-top: 4px;
+        }
+
+        .stat-sub {
+            font-size: 11px;
+            color: #9e9e9e;
+        }
+
+        /* BỘ LỌC TÌM KIẾM */
+        .filter-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 24px;
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 260px;
+            margin-bottom: 8px;
+        }
+
+        .filter-row label {
+            width: 90px;
+            font-size: 13px;
+        }
+
+        .filter-row input,
+        .filter-row select {
+            flex: 1;
+            padding: 5px 8px;
+            font-size: 13px;
+            border-radius: 3px;
+            border: 1px solid #b0bec5;
+            background: #ffffff;
+        }
+
+        .note-list {
+            font-size: 12px;
+            margin: 4px 0 0 16px;
+        }
+
+        .note-list li {
+            margin-bottom: 4px;
+        }
+
+        .footer-note {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #9e9e9e;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+<img src="left.jpg" class="side-img side-img-left" alt="Trang trí bên trái">
+<img src="right.jpg" class="side-img side-img-right" alt="Trang trí bên phải">
+<div class="top-bar"></div>
+<div class="page-wrapper">
+    <!-- HEADER CƠ QUAN / ĐƠN VỊ -->
+    <div class="header-gov">
+        <div class="gov-emblem">ABC</div>
+        <div class="gov-title-block">
+            <div class="gov-title-top">Ủy ban nhân dân phường</div>
+            <div class="gov-title-main">PHÒNG NỘI VỤ - CÔNG TY TNHH CÔNG NGHỆ ABC</div>
+            <div class="gov-title-sub">Hệ thống quản lý, theo dõi hồ sơ cán bộ, nhân viên</div>
+        </div>
+    </div>
+
+    <!-- THANH TÊN HỆ THỐNG -->
+    <div class="system-bar">
+        <div class="system-name">Hệ thống quản lý nhân sự nội bộ</div>
+        <div class="system-user">Người dùng: <span>THANG_NG</span></div>
+    </div>
+
+    <div class="content">
+        <!-- THỐNG KÊ NHANH -->
+        <div class="section-title">Thống kê nhanh</div>
+        <div class="section-note">
+            Số liệu tổng hợp sơ bộ dựa trên danh sách nhân sự đang được quản lý trên hệ thống.
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Tổng quan nhân sự</div>
+            <div class="panel-body">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Tổng số nhân sự</div>
+                        <div class="stat-value">6</div>
+                        <div class="stat-sub">Bao gồm cả hợp đồng và biên chế</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Nhân sự nam</div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-sub">Theo thông tin giới tính khai báo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Nhân sự nữ</div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-sub">Bao gồm cả chức danh chuyên môn</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Chưa cập nhật lương</div>
+                        <div class="stat-value">1</div>
+                        <div class="stat-sub">Cần bổ sung thông tin số tiền lương</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KHỐI THÊM MỚI NHÂN SỰ -->
+        <div class="section-title">Thông tin nhân sự</div>
+        <div class="section-note">
+            Nhập đầy đủ, chính xác các trường thông tin cơ bản để phục vụ công tác quản lý, theo dõi.
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Phiếu nhập thông tin nhân sự</div>
+            <div class="panel-body">
+                <div class="form-grid">
+                    <div class="form-row">
+                        <label for="maNv">Mã nhân viên:</label>
+                        <input type="text" id="maNv" name="maNv" placeholder="VD: NV005">
+                    </div>
+                    <div class="form-row">
+                        <label for="hoTen">Họ và tên:</label>
+                        <input type="text" id="hoTen" name="hoTen" placeholder="Nhập họ và tên">
+                    </div>
+                    <div class="form-row">
+                        <label for="chucDanh">Chức danh:</label>
+                        <input type="text" id="chucDanh" name="chucDanh" placeholder="VD: Chuyên viên, Lập trình viên">
+                    </div>
+                    <div class="form-row">
+                        <label for="ngaySinh">Ngày sinh:</label>
+                        <input type="date" id="ngaySinh" name="ngaySinh">
+                    </div>
+                    <div class="form-row">
+                        <label for="gioiTinh">Giới tính:</label>
+                        <select id="gioiTinh" name="gioiTinh">
+                            <option value="">-- Chọn --</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                            <option value="Khác">Khác</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="heSoLuong">Số tiền lương:</label>
+                        <input type="number" step="500" id="heSoLuong" name="heSoLuong" placeholder="VD: 1.000.000">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary">
+                        <span class="btn-icon">✔</span> Ghi nhận
+                    </button>
+                    <button type="reset" class="btn btn-reset">
+                        <span class="btn-icon">↺</span> Làm lại
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BỘ LỌC DANH SÁCH NHÂN SỰ -->
+        <div class="section-title">Bộ lọc danh sách nhân sự</div>
+        <div class="section-note">
+            Sử dụng bộ lọc để tra cứu nhanh nhân sự theo từ khóa, giới tính hoặc khoảng thời gian sinh.
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Tiêu chí lọc</div>
+            <div class="panel-body">
+                <div class="filter-grid">
+                    <div class="filter-row">
+                        <label for="tuKhoa">Từ khóa:</label>
+                        <input type="text" id="tuKhoa" placeholder="Mã NV / Họ tên / Chức danh">
+                    </div>
+                    <div class="filter-row">
+                        <label for="locGt">Giới tính:</label>
+                        <select id="locGt">
+                            <option value="">Tất cả</option>
+                            <option value="Nam">Nam</option>
+                            <option value="Nữ">Nữ</option>
+                        </select>
+                    </div>
+                    <div class="filter-row">
+                        <label for="tuNgay">Từ ngày:</label>
+                        <input type="date" id="tuNgay">
+                    </div>
+                    <div class="filter-row">
+                        <label for="denNgay">Đến ngày:</label>
+                        <input type="date" id="denNgay">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary">
+                        <span class="btn-icon">🔍</span> Áp dụng
+                    </button>
+                    <button type="button" class="btn btn-reset">
+                        <span class="btn-icon">✖</span> Xóa lọc
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BẢNG DANH SÁCH NHÂN SỰ -->
+        <div class="section-title">Danh sách nhân sự</div>
+        <div class="section-note">
+            Dữ liệu minh họa phục vụ mục đích thử nghiệm giao diện.
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">Bảng tổng hợp nhân sự</div>
+            <div class="panel-body">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã NV</th>
+                            <th>Họ và tên</th>
+                            <th>Chức danh</th>
+                            <th>Ngày sinh</th>
+                            <th>Giới tính</th>
+                            <th>Số tiền lương</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>NV001</td>
+                            <td>Nguyễn Văn A</td>
+                            <td><span class="tag-role">Dev</span></td>
+                            <td>01/01/1990</td>
+                            <td><span class="tag-gender male">Nam</span></td>
+                            <td>3.000.000</td>
+                        </tr>
+                        <tr>
+                            <td>NV002</td>
+                            <td>Trần Thị B</td>
+                            <td><span class="tag-role">Tester</span></td>
+                            <td>15/03/1992</td>
+                            <td><span class="tag-gender female">Nữ</span></td>
+                            <td>2.800.000</td>
+                        </tr>
+                        <tr>
+                            <td>NV003</td>
+                            <td>Lê Văn C</td>
+                            <td><span class="tag-role">PM</span></td>
+                            <td>20/06/1988</td>
+                            <td><span class="tag-gender male">Nam</span></td>
+                            <td>4.500.000</td>
+                        </tr>
+                        <tr>
+                            <td>NV004</td>
+                            <td>Lại Đức D</td>
+                            <td><span class="tag-role">HR</span></td>
+                            <td>25/07/2000</td>
+                            <td><span class="tag-gender male">Nam</span></td>
+                            <td>5.000.000</td>
+                        </tr>
+                        <tr>
+                            <td>NV005</td>
+                            <td>Phùng Hồng E</td>
+                            <td><span class="tag-role">Tester</span></td>
+                            <td>07/08/1998</td>
+                            <td><span class="tag-gender male">Nam</span></td>
+                            <td>4.500.000</td>
+                        </tr>
+                        <tr>
+                            <td>NV006</td>
+                            <td>Cấn Thảo G</td>
+                            <td><span class="tag-role">Dev</span></td>
+                            <td>20/10/2002</td>
+                            <td><span class="tag-gender female">Nữ</span></td>
+                            <td>—</td>
+
+                        <tr>
+                            <td>NV007</td>
+                            <td>Hoàng Văn J</td>
+                            <td><span class ="tag-role">Des</span></td>
+                            <td> 30/11/1993</td>
+                            <td><span class="tag-gender male">Nam</span></td>
+                            <td>8.000.000</td>
+                        </tr>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- GHI CHÚ / HƯỚNG DẪN -->
+        <div class="section-title">Ghi chú và hướng dẫn sử dụng</div>
+        <div class="panel">
+            <div class="panel-header">Lưu ý đối với cán bộ nhập liệu</div>
+            <div class="panel-body">
+                <ul class="note-list">
+                    <li>Đảm bảo thông tin họ tên, ngày sinh trùng khớp với hồ sơ gốc (sổ BHXH, quyết định tuyển dụng...).</li>
+                    <li>Mã nhân viên phải là duy nhất, không trùng lặp giữa các đơn vị, bộ phận.</li>
+                    <li>Trường chức danh ghi đúng theo quyết định bổ nhiệm hoặc hợp đồng lao động.</li>
+                    <li>Sau khi cập nhật, cán bộ phụ trách cần rà soát lại tối thiểu 01 lần trước khi in báo cáo.</li>
+                    <li>Trường hợp có thay đổi về nhân sự (điều động, thôi việc, nghỉ thai sản, v.v.), cần cập nhật kịp thời trong ngày làm việc.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-note">
+            Giao diện mô phỏng phục vụ mục đích học tập, không phải hệ thống chính thức.
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
